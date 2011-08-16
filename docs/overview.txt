@@ -417,7 +417,7 @@ Retrieving tags used by a particular model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To retrieve all tags used for a particular model, use the
-``get_for_model`` helper function::
+``usage_for_model`` helper function::
 
    >>> widget1 = Widget.objects.get(pk=1)
    >>> Tag.objects.update_tags(widget1, 'house thing')
@@ -518,8 +518,8 @@ helper methods, which accept either a ``QuerySet`` or a ``Model``
 class as one of their arguments. To restrict the objects which are
 returned, pass in a filtered ``QuerySet`` for this argument:
 
-* ``get_by_model(queryset_or_model, tag)`` -- creates a ``QuerySet``
-  containing instances of the specififed model which are tagged with
+* ``get_by_model(queryset_or_model, tags)`` -- creates a ``QuerySet``
+  containing instances of the specified model which are tagged with
   the given tag or tags.
 
 * ``get_intersection_by_model(queryset_or_model, tags)`` -- creates a
@@ -527,7 +527,7 @@ returned, pass in a filtered ``QuerySet`` for this argument:
   tagged with every tag in a list of tags.
 
   ``get_by_model`` will call this function behind the scenes when you
-  pass it a list, so you can use ``get_by_model`` instead of calling
+  pass it a list of tags, so you can use ``get_by_model`` instead of calling
   this method directly.
 
 * ``get_union_by_model(queryset_or_model, tags)`` -- creates a
