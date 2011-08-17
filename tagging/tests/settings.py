@@ -25,7 +25,11 @@ elif test_engine == "django.db.backends.postgresql_psycopg2":
 
 
 INSTALLED_APPS = (
+    'django.contrib.auth',
+    'django.contrib.sessions',
     'django.contrib.contenttypes',
     'tagging',
     'tagging.tests',
 )
+
+ROOT_URLCONF = ''
