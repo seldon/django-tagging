@@ -29,8 +29,7 @@ class TagManager(models.Manager):
         Update tags associated with an object.
         """
         ctype = ContentType.objects.get_for_model(obj)
-        current_tags = list(self.filter(items__content_type__pk=ctype.pk,
-                                        items__object_id=obj.pk))
+        current_tags = list(self.get_for_object(obj))
         updated_tag_names = parse_tag_input(tag_names)
         if settings.FORCE_LOWERCASE_TAGS:
             updated_tag_names = [t.lower() for t in updated_tag_names]
