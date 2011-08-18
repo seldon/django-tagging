@@ -10,6 +10,7 @@ from tagging.models import Tag, TaggedItem
 from tagging.tests.models import Article, Link, Perch, Parrot, FormTest, FormTestNull
 from tagging.utils import calculate_cloud, edit_string_for_tags, get_tag_list, get_tag, parse_tag_input
 from tagging.utils import LINEAR
+from django.contrib.contenttypes.models import ContentType
 
 #############
 # Utilities #
@@ -877,6 +878,46 @@ class TestTagUsageForQuerySet(TestCase):
         self.assertEquals(len(relevant_attribute_list), 2)
         self.failUnless((u'bar', 1) in relevant_attribute_list)
         self.failUnless((u'ter', 1) in relevant_attribute_list)
+        
+
+class TestAutoTagRemovalOnDeletion(TestCase):
+    """
+    Check that no dangling tag references persist after deletion of a tagged model instance. 
+    """
+    def setUp(self):
+        self.a1 = Article.objects.create(name='article 1')
+        Tag.objects.update_tags(self.a1, 'tag1 tag2')
+        self.a2 = Article.objects.create(name='article 2')
+        Tag.objects.update_tags(self.a2, 'tag1 tag3')
+        self.l1 = Link.objects.create(name='link 1')
+        Tag.objects.update_tags(self.l1, 'tag1 tag2 tag3')
+    
+    def test_tag_auto_removal_on_deletion(self):
+        # store the id and content type of the instance to be deleted
+        deleted_obj_ctype = ContentType.objects.get_for_model(Article)
+        deleted_obj_id = self.a1.pk  
+        # delete the instance
+        self.a1.delete()
+        # retrieve the QuerySet of ``TaggedItem``s associated with the deleted instance;
+        # if all went OK, it should be empty..
+        qs = TaggedItem.objects.filter(content_type = deleted_obj_ctype, object_id = deleted_obj_id)
+        self.assertEquals(len(qs), 0)     
+        
+        # check that other instance's tags are still there
+        tags = Tag.objects.get_for_object(self.a2)
+        self.assertEquals(len(tags), 2)
+        self.failUnless(get_tag('tag1') in tags)
+        self.failUnless(get_tag('tag3') in tags)
+        
+        tags = Tag.objects.get_for_object(self.l1)
+        self.assertEquals(len(tags), 3)
+        self.failUnless(get_tag('tag1') in tags)
+        self.failUnless(get_tag('tag2') in tags)
+        self.failUnless(get_tag('tag3') in tags)
+        
+    
+    
+    
         
 ################
 # Model Fields #
