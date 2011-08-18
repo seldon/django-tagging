@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext_lazy as _
+from django.db.models.signals import post_delete
 
 from tagging import settings
 from tagging.utils import calculate_cloud, get_tag_list, get_queryset_and_model, parse_tag_input
@@ -467,6 +468,23 @@ class Tag(models.Model):
 
     def __unicode__(self):
         return self.name
+
+def taggeditem_delete(sender, **kwargs):
+    deleted = kwargs['instance']
+    try:
+        id = int(deleted.pk)
+    except ValueError:
+        return
+    ctype = ContentType.objects.get_for_model(deleted)
+    item_tags = TaggedItem.objects.filter(
+            content_type=ctype,
+            object_id=id,
+        )
+    item_tags.delete()
+
+post_delete.connect(taggeditem_delete)
+
+
 
 class TaggedItem(models.Model):
     """
