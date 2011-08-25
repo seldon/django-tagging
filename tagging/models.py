@@ -40,7 +40,7 @@ class TagManager(models.Manager):
         tags_for_removal = [tag for tag in current_tags \
                             if tag.name not in updated_tag_names]
         if len(tags_for_removal):
-            TaggedItem._default_manager.filter(content_type__pk=ctype.pk,
+            TaggedItem._default_manager.filter(content_type=ctype,
                                                object_id=obj.pk,
                                                tag__in=tags_for_removal).delete()
         # Add new tags
@@ -73,7 +73,7 @@ class TagManager(models.Manager):
         object.
         """
         ctype = ContentType.objects.get_for_model(obj)
-        return self.filter(items__content_type__pk=ctype.pk,
+        return self.filter(items__content_type=ctype,
                            items__object_id=obj.pk)
 
     def usage_for_model(self, model, counts=False, min_count=None, filters=None):
